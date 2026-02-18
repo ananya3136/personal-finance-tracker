@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import API from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./Login.css";
 
 function Login() {
@@ -24,7 +24,6 @@ function Login() {
       const token = response.data.token;
 
       localStorage.setItem("token", token);
-
       navigate("/dashboard");
     } catch (err) {
       setError("Login failed. Please check your email and password.");
@@ -83,6 +82,16 @@ function Login() {
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
+
+          <p className="login__switch">
+            Don't have an account?{" "}
+            <Link to="/register" className="login__link">
+              Create account
+            </Link>
+          </p>
+          <Link to="/" className="login__back">
+            ← Back to home
+          </Link>
         </form>
       </div>
     </div>

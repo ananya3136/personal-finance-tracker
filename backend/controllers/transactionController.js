@@ -115,7 +115,24 @@ const getCategorySummary = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+const deleteTransaction = async (req, res) => {
+  try {
+    const transaction = await Transaction.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    await transaction.deleteOne();
+
+    res.json({ message: "Transaction deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 
-
-module.exports = { addTransaction, getTransactions, getSummary, getCategorySummary };
+module.exports = { addTransaction, getTransactions, getSummary, getCategorySummary, deleteTransaction };
