@@ -7,8 +7,6 @@ const API = axios.create({
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
 
-  console.log("TOKEN BEING SENT:", token); // add this temporarily
-
   if (token) {
     req.headers.Authorization = `Bearer ${token}`;
   }

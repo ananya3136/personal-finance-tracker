@@ -1,67 +1,41 @@
+console.log("SERVER FILE LOADED");
 
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-
-const app = express();
-
-app.use(cors({
-  origin: "http://localhost:3000",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-app.use(express.json());
-
-const transactionRoutes = require("./routes/transactionRoutes");
-const alertRoutes = require("./routes/alertRoutes");
-const insightRoutes = require("./routes/insightRoutes");
-const aiRoutes = require("./routes/aiRoutes");
-const anomalyRoutes = require("./routes/anomalyRoutes");
-const predictionRoutes = require("./routes/predictionRoutes");
-const healthRoutes = require("./routes/healthRoutes");
-const strategyRoutes = require("./routes/strategyRoutes");
-const express =  require("express");
-require("./models/User");
-require("./models/Transaction");
-require("./models/Budget");
-require("./models/Alert");
-
-
-
-
-//middleware to read JSON from requests
-const userRoutes = require("./routes/userRoutes");
-app.use("/api/transactions", transactionRoutes);
-const budgetRoutes = require("./routes/budgetRoutes");
-app.use("/api/budgets", budgetRoutes);
-app.use("/api/alerts", alertRoutes);
-app.use("/api/insights", insightRoutes);
-app.use("/api/ai", aiRoutes);
-app.use("/api/anomalies", anomalyRoutes);
-app.use("/api/predict", predictionRoutes);
-app.use("/api/health-score", healthRoutes);
-app.use("/api/strategy", strategyRoutes);
-
-
-
-
-//connect mongodb
 const mongoose = require("mongoose");
 
-mongoose
-.connect(process.env.MONGO_URI)
-.then(()=> console.log("MongoDB connected"))
-.catch(err => console.error("MongoDB connection error:", err));
-app.use("/api/users", userRoutes);
+const app = express();
+app.use(cors());
+// Parse JSON
+app.use(express.json());
 
-//test route
-app.get("/", (req, res) =>{
-    res.send("Personal Finance Tracker API is running");
+// Routes
+const userRoutes = require("./routes/userRoutes");
+const healthRoutes = require("./routes/healthRoutes");
+const predictionRoutes = require("./routes/predictionRoutes");
+const alertRoutes = require("./routes/alertRoutes");
+app.use("/api/users", userRoutes);
+app.use("/api/health-score", healthRoutes);
+app.use("/api/predict", predictionRoutes);
+app.use("/api/alerts", alertRoutes);
+console.log("Prediction route mounted");
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Backend is running");
 });
 
-//start the server 
-const PORT=  5000;
-app.listen(PORT, ()=> {
-    console.log(`Server running on port ${PORT}`);
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.log(err));
+  app.get("/api/predict", (req, res) => {
+    res.json({ test: "Predict route working" });
+  });
+  
+// Start server
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
 });

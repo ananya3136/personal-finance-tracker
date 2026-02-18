@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
       const response = await API.post("/users/login", {
@@ -21,39 +26,65 @@ function Login() {
       localStorage.setItem("token", token);
 
       navigate("/dashboard");
-    } catch (error) {
-      alert("Login failed");
+    } catch (err) {
+      setError("Login failed. Please check your email and password.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+    <div className="login">
+      <div className="login__card">
+        <h1 className="login__title">Welcome back</h1>
+        <p className="login__subtitle">Sign in to your finance tracker</p>
 
-        <div style={{ marginTop: "10px" }}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleLogin} className="login__form">
+          {error && (
+            <div className={`login__error login__error--visible`}>{error}</div>
+          )}
 
-        <button style={{ marginTop: "15px" }} type="submit">
-          Login
-        </button>
-      </form>
+          <div className="login__field">
+            <label htmlFor="email" className="login__label">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="login__input"
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <div className="login__field">
+            <label htmlFor="password" className="login__label">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="login__input"
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="login__submit"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
