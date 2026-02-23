@@ -1,41 +1,42 @@
 const mongoose = require("mongoose");
 const Transaction = require("../models/Transaction");
 
-// Add Transaction
+
+// ===============================
+// ADD TRANSACTION
+// ===============================
 const addTransaction = async (req, res) => {
   try {
-    const { amount, type, category, description, date } = req.body;
-
-    if (!amount || !type || !category) {
-      return res.status(400).json({ message: "Required fields missing" });
-    }
+    const { amount, category, type, date, description } = req.body;
 
     const transaction = await Transaction.create({
-      user: req.user,
       amount,
-      type,
       category,
+      type,
+      date,
       description,
-      date: date ? new Date(date) : Date.now()
+      user: req.user._id,   // 🔥 Always use _id
     });
 
     res.status(201).json(transaction);
 
   } catch (error) {
     res.status(500).json({
-      message: "Server error",
+      message: "Failed to add transaction",
       error: error.message
     });
   }
 };
 
 
-// Get Transactions
+// ===============================
+// GET TRANSACTIONS (FILTERED BY USER)
+// ===============================
 const getTransactions = async (req, res) => {
   try {
     const { month } = req.query;
 
-    let filter = { user: req.user };
+    let filter = { user: req.user._id };
 
     if (month) {
       const startDate = new Date(`${month}-01`);
@@ -49,18 +50,27 @@ const getTransactions = async (req, res) => {
     }
 
     const transactions = await Transaction.find(filter)
-      .sort({ createdAt: -1 });
+      .sort({ date: -1 });
 
     res.status(200).json(transactions);
 
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
   }
 };
 
+
+// ===============================
+// GET INCOME / EXPENSE SUMMARY
+// ===============================
 const getSummary = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ user: req.user });
+    const transactions = await Transaction.find({
+      user: req.user._id
+    });
 
     let totalIncome = 0;
     let totalExpense = 0;
@@ -73,26 +83,32 @@ const getSummary = async (req, res) => {
       }
     });
 
-    const balance = totalIncome - totalExpense;
-
     res.status(200).json({
       totalIncome,
       totalExpense,
-      balance
+      balance: totalIncome - totalExpense
     });
 
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
   }
 };
+
+
+// ===============================
+// CATEGORY SUMMARY (EXPENSE ONLY)
+// ===============================
 const getCategorySummary = async (req, res) => {
   try {
     const summary = await Transaction.aggregate([
       {
         $match: {
-  user: new mongoose.Types.ObjectId(req.user),
-  type: "expense"
-}
+          user: new mongoose.Types.ObjectId(req.user._id),
+          type: "expense"
+        }
       },
       {
         $group: {
@@ -112,27 +128,52 @@ const getCategorySummary = async (req, res) => {
     res.status(200).json(summary);
 
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
   }
 };
+
+
+// ===============================
+// DELETE TRANSACTION
+// ===============================
 const deleteTransaction = async (req, res) => {
   try {
     const transaction = await Transaction.findOne({
       _id: req.params.id,
-      userId: req.user.id,
+      user: req.user._id   // 🔥 Correct user filter
     });
 
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.status(404).json({
+        message: "Transaction not found"
+      });
     }
 
     await transaction.deleteOne();
 
-    res.json({ message: "Transaction deleted successfully" });
+    res.status(200).json({
+      message: "Transaction deleted successfully"
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
   }
 };
 
 
-module.exports = { addTransaction, getTransactions, getSummary, getCategorySummary, deleteTransaction };
+// ===============================
+// EXPORTS
+// ===============================
+module.exports = {
+  addTransaction,
+  getTransactions,
+  getSummary,
+  getCategorySummary,
+  deleteTransaction
+};

@@ -1,9 +1,44 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import { Cell } from "recharts";
+
 
 const CURRENT_MONTH = "2026-02";
 const CIRCUMFERENCE = 2 * Math.PI * 90;
+
+
+const useCountUp = (value, duration = 800) => {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const increment = value / (duration / 16);
+
+    const counter = setInterval(() => {
+      start += increment;
+      if (start >= value) {
+        start = value;
+        clearInterval(counter);
+      }
+      setDisplayValue(Math.floor(start));
+    }, 16);
+
+    return () => clearInterval(counter);
+  }, [value, duration]);
+
+  return displayValue;
+};
+
 
 function getGrade(score) {
   if (score >= 90) return "A+";
@@ -54,9 +89,18 @@ function Dashboard() {
   const [predictionError, setPredictionError] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [recommendation, setRecommendation] = useState(null);
+  const[analytics, setAnalytics] = useState([]);
+  const[range, setRange]= useState("this");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  //  Animated values
+const incomeAnimated = useCountUp(analytics?.income || 0);
+const expenseAnimated = useCountUp(analytics?.expense || 0);
+const savingsAnimated = useCountUp(analytics?.savings || 0);
+
+const [openDropdown, setOpenDropdown] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -75,12 +119,14 @@ function Dashboard() {
         setLoading(true);
         setError(null);
 
-        const [healthRes, predictionRes, alertRes, transactionRes] =
+        const [healthRes, predictionRes, alertRes, transactionRes,recommendationRes,analyticsRes] =
           await Promise.all([
             fetch(`/api/health-score?month=${CURRENT_MONTH}`, { headers }),
             fetch(`/api/predict?month=${CURRENT_MONTH}`, { headers }),
             fetch(`/api/alerts`, { headers }),
             fetch(`/api/transactions`, { headers }),
+            fetch(`/api/recommendations?month=${CURRENT_MONTH}`, { headers }),
+            fetch(`/api/analytics?range=${range}`, { headers }),
           ]);
 
         if (healthRes.ok) {
@@ -104,6 +150,15 @@ function Dashboard() {
           const transactionData = await transactionRes.json();
           setTransactions(transactionData);
         }
+        if (recommendationRes.ok) {
+  const recData = await recommendationRes.json();
+  setRecommendation(recData);
+}
+        if (analyticsRes.ok) {
+          const data = await analyticsRes.json();
+          setAnalytics(data);
+        }
+
       } catch (err) {
         console.error("Dashboard load error:", err);
         setError("Failed to load dashboard data.");
@@ -186,28 +241,151 @@ function Dashboard() {
             <p className="prediction-message">{prediction.message}</p>
           </div>
         )}
+{recommendation && !loading && (
+  <div className="card recommendation-card">
+    <div className="recommendation-header">
+      <div>
+        <h3 className="recommendation-title">
+          🤖 Smart Savings Advice
+        </h3>
+        <p className="recommendation-subtitle">
+          AI-powered monthly analysis
+        </p>
+      </div>
+
+      <div className="savings-badge">
+        {recommendation?.savingsRate || 0}%
+        <span>Savings Rate</span>
+      </div>
+    </div>
+
+    <div className="recommendation-body">
+      <div className="recommendation-chip">
+        Top Expense:
+        <span className="recommendation-chip__value">
+          {recommendation?.topExpenseCategory || "No expense data"}
+        </span>
+      </div>
+
+      <p className="recommendation-text">
+        {recommendation?.advice || ""}
+      </p>
+    </div>
+  </div>
+)}
+
+
+
+
 
         {!loading && (
           <div className="card alert-card">
             <div className="card__header">
               <h3>Budget Alerts</h3>
             </div>
-            {alerts.length > 0 ? (
-              <div className="alert-list">
-                {alerts.map((alert, index) => (
-                  <div
-                    key={index}
-                    className={`alert-item alert-item--${alert.type ? alert.type.toLowerCase() : "info"}`}
-                  >
-                    {alert.message}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="alert-empty">All budgets are on track</div>
-            )}
-          </div>
+           {alerts.length === 0 && (
+  <div className="alert-smart">
+    <div className="alert-smart__icon">✅</div>
+
+    <div className="alert-smart__content">
+      <h4 className="alert-smart__title">
+        All budgets are on track
+      </h4>
+
+      <p className="alert-smart__subtitle">
+        You're managing your spending well this month.
+      </p>
+
+      <div className="alert-smart__meta">
+        ✔ No categories exceeded  
+        ✔ No warning thresholds triggered
+      </div>
+    </div>
+  </div>
+)}
+</div>
         )}
+       {analytics && !loading && (
+  <div className="glass-card analytics-glass">
+
+    <div className="glass-header">
+      <h3>Financial Overview</h3>
+<div className="glass-dropdown">
+  <div
+    className="glass-dropdown-selected"
+    onClick={() => setOpenDropdown(!openDropdown)}
+  >
+    {range === "this" && "This Month"}
+    {range === "last" && "Last Month"}
+    {range === "all" && "All Time"}
+    <span className="arrow">▾</span>
+  </div>
+
+  {openDropdown && (
+    <div className="glass-dropdown-menu">
+      <div onClick={() => { setRange("this"); setOpenDropdown(false); }}>
+        This Month
+      </div>
+      <div onClick={() => { setRange("last"); setOpenDropdown(false); }}>
+        Last Month
+      </div>
+      <div onClick={() => { setRange("all"); setOpenDropdown(false); }}>
+        All Time
+      </div>
+    </div>
+  )}
+</div>
+     
+    </div>
+
+    <div className="glass-stats">
+      <div className="stat income">
+        <span>Income</span>
+        <h2>₹{incomeAnimated}</h2>
+      </div>
+      <div className="stat expense">
+        <span>Expense</span>
+        <h2>₹{expenseAnimated}</h2>
+      </div>
+      <div className="stat savings">
+        <span>Savings</span>
+        <h2>₹{savingsAnimated}</h2>
+      </div>
+    </div>
+
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart
+        data={[
+          { name: "Income", value: analytics.income },
+          { name: "Expense", value: analytics.expense },
+          { name: "Savings", value: analytics.savings },
+        ]}
+      >
+        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+        <XAxis dataKey="name" stroke="#cbd5e1" />
+        <YAxis stroke="#cbd5e1" />
+        <Tooltip
+          contentStyle={{
+            background: "rgba(15, 23, 42, 0.9)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "12px",
+            color: "#fff",
+          }}
+        />
+        <Bar
+          dataKey="value"
+          radius={[16, 16, 0, 0]}
+          animationDuration={1200}
+        >
+          <Cell fill="#22e6a0" />
+          <Cell fill="#ff4d6d" />
+          <Cell fill="#f5a623" />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+)}
 
         {!loading && transactions.length > 0 && (
           <div className="card transactions-card">

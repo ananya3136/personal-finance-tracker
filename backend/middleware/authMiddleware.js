@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const protect = (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -8,15 +9,24 @@ const protect = (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
+      // Extract token
       token = req.headers.authorization.split(" ")[1];
 
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = decoded.id;
+      // 🔥 Attach FULL user object (not just id)
+      req.user = await User.findById(decoded.id).select("-password");
+
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+      }
 
       next();
+
     } catch (error) {
-      return res.status(401).json({ message: "Not authorized" });
+      console.error("Auth Middleware Error:", error);
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
 
