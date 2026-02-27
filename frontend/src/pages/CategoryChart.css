@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap');
+
+.category-chart-card {
+  margin-top: 24px;
+  padding: 28px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.category-chart-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 229, 160, 0.08);
+}
+
+/* ── HEADER ── */
+.category-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.category-chart__title-wrap h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f0f4ff;
+  margin: 0 0 4px 0;
+}
+
+.category-chart__title-wrap p {
+  font-size: 0.78rem;
+  color: #4a5a7a;
+  margin: 0;
+}
+
+.category-chart__total {
+  text-align: right;
+}
+
+.category-chart__total-label {
+  font-size: 0.72rem;
+  color: #4a5a7a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.category-chart__total-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ef4444;
+  margin-top: 2px;
+}
+
+/* ── CHART + LEGEND LAYOUT ── */
+.category-chart__body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.category-chart__pie {
+  flex-shrink: 0;
+}
+
+/* ── LEGEND ── */
+.category-chart__legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+
+.category-chart__legend::-webkit-scrollbar { width: 3px; }
+.category-chart__legend::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.legend-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.legend-item--active {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.legend-item__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.legend-item__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-item__name {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #d1daf0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legend-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.legend-item__amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f0f4ff;
+}
+
+.legend-item__pct {
+  font-size: 0.7rem;
+  color: #4a5a7a;
+  font-weight: 500;
+}
+
+/* ── EMPTY STATE ── */
+.category-chart__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  gap: 12px;
+  color: #4a5a7a;
+  text-align: center;
+}
+
+.category-chart__empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+
+.category-chart__empty p {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ── CUSTOM TOOLTIP ── */
+.pie-tooltip {
+  background: rgba(15, 24, 41, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.pie-tooltip__label {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f0f4ff;
+  margin-bottom: 4px;
+}
+
+.pie-tooltip__value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.pie-tooltip__pct {
+  font-size: 0.75rem;
+  color: #4a5a7a;
+  margin-top: 2px;
+}

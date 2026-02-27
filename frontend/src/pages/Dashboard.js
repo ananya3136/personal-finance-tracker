@@ -11,7 +11,9 @@ import {
   Tooltip,
 } from "recharts";
 import { Cell } from "recharts";
-
+import AIChatbot from "./AIChatbot";
+import ExportButton from "./ExportButton";
+import CategoryChart from "./CategoryChart";
 
 const CURRENT_MONTH = "2026-02";
 const CIRCUMFERENCE = 2 * Math.PI * 90;
@@ -81,6 +83,38 @@ function HealthRing({ score }) {
   );
 }
 
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div
+      style={{
+        background: "rgba(15,23,42,0.9)",
+        backdropFilter: "blur(12px)",
+        borderRadius: "14px",
+        padding: "14px 18px",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 0 25px rgba(0,0,0,0.5)",
+      }}
+    >
+      {payload.map((entry, index) => (
+        <div
+          key={index}
+          style={{
+            marginBottom: "6px",
+            color: entry.fill,
+            fontWeight: 600,
+            fontSize: "16px",
+          }}
+        >
+          {entry.name.charAt(0).toUpperCase() + entry.name.slice(1)}: ₹
+          {entry.value}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 function Dashboard() {
   const navigate = useNavigate();
 
@@ -94,12 +128,23 @@ function Dashboard() {
   const[range, setRange]= useState("this");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+const [activeIndex, setActiveIndex] = useState(null);
+const[aiInsight, setAiInsight]= useState(null);
+const[categoryData, setCategoryData]= useState([]);
   //  Animated values
 const incomeAnimated = useCountUp(analytics?.income || 0);
 const expenseAnimated = useCountUp(analytics?.expense || 0);
 const savingsAnimated = useCountUp(analytics?.savings || 0);
-
+const chartData = analytics
+  ? [
+      {
+        name: "Overview",
+        income: analytics.income || 0,
+        expense: analytics.expense || 0,
+        savings: analytics.savings || 0
+      }
+    ]
+  : [];
 const [openDropdown, setOpenDropdown] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -108,66 +153,61 @@ const [openDropdown, setOpenDropdown] = useState(false);
       navigate("/");
       return;
     }
+const loadData = async () => {
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 
-    const loadData = async () => {
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      };
+  try {
+    setLoading(true);
+    setError(null);
 
-      try {
-        setLoading(true);
-        setError(null);
+    const [healthRes, predictionRes, transactionRes, recommendationRes, analyticsRes,categoryRes] =
+      await Promise.all([
+        fetch(`/api/health-score?month=${CURRENT_MONTH}`, { headers }),
+        fetch(`/api/predict?month=${CURRENT_MONTH}`, { headers }),
+        fetch(`/api/transactions`, { headers }),
+        fetch(`/api/recommendations?month=${CURRENT_MONTH}`, { headers }),
+        fetch(`/api/analytics?range=${range}`, { headers }),
+        fetch(`/api/transactions/category-summary`, { headers }),
+      ]);
 
-        const [healthRes, predictionRes, alertRes, transactionRes,recommendationRes,analyticsRes] =
-          await Promise.all([
-            fetch(`/api/health-score?month=${CURRENT_MONTH}`, { headers }),
-            fetch(`/api/predict?month=${CURRENT_MONTH}`, { headers }),
-            fetch(`/api/alerts`, { headers }),
-            fetch(`/api/transactions`, { headers }),
-            fetch(`/api/recommendations?month=${CURRENT_MONTH}`, { headers }),
-            fetch(`/api/analytics?range=${range}`, { headers }),
-          ]);
+    if (healthRes.ok) setHealth(await healthRes.json());
+    if (predictionRes.ok) setPrediction(await predictionRes.json());
+    else setPredictionError("Prediction failed.");
+    if (transactionRes.ok) setTransactions(await transactionRes.json());
+    if (recommendationRes.ok) setRecommendation(await recommendationRes.json());
+    if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
+    if (categoryRes.ok) setCategoryData(await categoryRes.json());
 
-        if (healthRes.ok) {
-          const data = await healthRes.json();
-          setHealth(data);
-        }
+  } catch (err) {
+    console.error("Dashboard load error:", err);
+    setError("Failed to load dashboard data.");
+  } finally {
+    setLoading(false);
+  }
 
-        if (predictionRes.ok) {
-          const data = await predictionRes.json();
-          setPrediction(data);
-        } else {
-          setPredictionError("Prediction failed.");
-        }
-
-        if (alertRes.ok) {
-          const alertData = await alertRes.json();
-          setAlerts(alertData);
-        }
-
-        if (transactionRes.ok) {
-          const transactionData = await transactionRes.json();
-          setTransactions(transactionData);
-        }
-        if (recommendationRes.ok) {
-  const recData = await recommendationRes.json();
-  setRecommendation(recData);
-}
-        if (analyticsRes.ok) {
-          const data = await analyticsRes.json();
-          setAnalytics(data);
-        }
-
-      } catch (err) {
-        console.error("Dashboard load error:", err);
-        setError("Failed to load dashboard data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // AI loads separately in background
+  try {
+    const insightRes = await fetch(`/api/ai/insights`, { headers });
+    if (insightRes.ok) {
+      const data = await insightRes.json();
+      setAiInsight(data.insight);
+    }
+  } catch (err) {
+    console.error("AI insight load error:", err);
+  }
+};
 
     loadData();
+
+    // AI insight is slow (Ollama) — fire and forget so it doesn't block the dashboard
+    fetch(`/api/ai/insights`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.insight) setAiInsight(data.insight); })
+      .catch(() => {});
+
   }, [navigate]);
 
   const handleLogout = () => {
@@ -175,30 +215,86 @@ const [openDropdown, setOpenDropdown] = useState(false);
     navigate("/");
   };
 
+
   return (
     <div className="dashboard">
       <div className="dashboard__content">
 
         <header className="dashboard__header">
           <h1 className="dashboard__title">Dashboard</h1>
-          <div className="dashboard__actions">
-            <button
-              className="btn btn--primary"
-              onClick={() => navigate("/add-transaction")}
-            >
-              + Add Transaction
-            </button>
-            <button
-              className="btn btn--secondary"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          </div>
+       <div className="dashboard__actions">
+  <ExportButton transactions={transactions} />
+  <button className="btn btn--secondary" onClick={() => navigate("/budget")}>
+    🎯 Budgets
+  </button>
+  <button className="btn btn--primary" onClick={() => navigate("/add-transaction")}>
+    + Add Transaction
+  </button>
+  <button className="btn btn--secondary" onClick={handleLogout}>
+    Logout
+  </button>
+</div>
         </header>
 
-        {loading && <div className="loading">Loading your financial data...</div>}
         {error && <div className="error">{error}</div>}
+
+        {loading && (
+          <div className="skeleton-wrapper">
+            {/* Health card skeleton */}
+            <div className="skeleton-card">
+              <div className="skeleton-label"></div>
+              <div className="skeleton-ring-wrap">
+                <div className="skeleton-ring"></div>
+              </div>
+              <div className="skeleton-badge"></div>
+            </div>
+
+            {/* Prediction card skeleton */}
+            <div className="skeleton-card">
+              <div className="skeleton-label"></div>
+              <div className="skeleton-grid">
+                <div className="skeleton-stat"></div>
+                <div className="skeleton-stat"></div>
+              </div>
+              <div className="skeleton-line"></div>
+            </div>
+
+            {/* Recommendation card skeleton */}
+            <div className="skeleton-card">
+              <div className="skeleton-label"></div>
+              <div className="skeleton-line"></div>
+              <div className="skeleton-line skeleton-line--short"></div>
+            </div>
+
+            {/* Analytics card skeleton */}
+            <div className="skeleton-card">
+              <div className="skeleton-label"></div>
+              <div className="skeleton-grid">
+                <div className="skeleton-stat"></div>
+                <div className="skeleton-stat"></div>
+                <div className="skeleton-stat"></div>
+              </div>
+              <div className="skeleton-chart"></div>
+            </div>
+
+            {/* Transactions skeleton */}
+            <div className="skeleton-card">
+              <div className="skeleton-label"></div>
+              {[1,2,3,4].map(i => (
+                <div key={i} className="skeleton-tx-row">
+                  <div className="skeleton-tx-left">
+                    <div className="skeleton-dot"></div>
+                    <div>
+                      <div className="skeleton-line skeleton-line--med"></div>
+                      <div className="skeleton-line skeleton-line--xs"></div>
+                    </div>
+                  </div>
+                  <div className="skeleton-line skeleton-line--short"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {health && !loading && (
           <div className="card health-card">
@@ -276,66 +372,99 @@ const [openDropdown, setOpenDropdown] = useState(false);
 
 
 
-
-
-        {!loading && (
-          <div className="card alert-card">
-            <div className="card__header">
-              <h3>Budget Alerts</h3>
-            </div>
-           {alerts.length === 0 && (
-  <div className="alert-smart">
-    <div className="alert-smart__icon">✅</div>
-
-    <div className="alert-smart__content">
-      <h4 className="alert-smart__title">
-        All budgets are on track
-      </h4>
-
-      <p className="alert-smart__subtitle">
-        You're managing your spending well this month.
-      </p>
-
-      <div className="alert-smart__meta">
-        ✔ No categories exceeded  
-        ✔ No warning thresholds triggered
+{!loading && (
+  <div className="ai-insight-card">
+    <div className="ai-insight-header">
+      <div className="ai-insight-icon">🧠</div>
+      <div>
+        <h3 className="ai-insight-title">AI Financial Intelligence</h3>
+        <p className="ai-insight-sub">Powered by your financial data</p>
       </div>
+    </div>
+    <div className="ai-insight-body">
+      {aiInsight ? (
+        aiInsight
+          .split(/\n+/)
+          .filter(line => line.trim())
+          .map((line, i) => {
+            const headerMatch = line.match(/^\*\*(.+?):\*\*\s*(.*)/);
+            if (headerMatch) {
+              return (
+                <div key={i} className="ai-insight-section">
+                  <div className="ai-insight-section-label">{headerMatch[1]}</div>
+                  {headerMatch[2] && (
+                    <p className="ai-insight-section-text"
+                      dangerouslySetInnerHTML={{
+                        __html: headerMatch[2].replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            }
+            return (
+              <p key={i} className="ai-insight-plain"
+                dangerouslySetInnerHTML={{
+                  __html: line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                }}
+              />
+            );
+          })
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0" }}>
+          <div style={{
+            width: "20px", height: "20px", borderRadius: "50%",
+            border: "2px solid #334155", borderTopColor: "#00e5a0",
+            animation: "spin 0.8s linear infinite"
+          }} />
+          <p style={{ color: "#4a5a7a", fontStyle: "italic", margin: 0 }}>
+            Analyzing your finances... this may take a moment.
+          </p>
+        </div>
+      )}
     </div>
   </div>
 )}
-</div>
-        )}
-       {analytics && !loading && (
+
+<style>{`
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`}</style>
+
+       
+      
+      {analytics && !loading && (
   <div className="glass-card analytics-glass">
 
     <div className="glass-header">
       <h3>Financial Overview</h3>
-<div className="glass-dropdown">
-  <div
-    className="glass-dropdown-selected"
-    onClick={() => setOpenDropdown(!openDropdown)}
-  >
-    {range === "this" && "This Month"}
-    {range === "last" && "Last Month"}
-    {range === "all" && "All Time"}
-    <span className="arrow">▾</span>
-  </div>
 
-  {openDropdown && (
-    <div className="glass-dropdown-menu">
-      <div onClick={() => { setRange("this"); setOpenDropdown(false); }}>
-        This Month
+      <div className="glass-dropdown">
+        <div
+          className="glass-dropdown-selected"
+          onClick={() => setOpenDropdown(!openDropdown)}
+        >
+          {range === "this" && "This Month"}
+          {range === "last" && "Last Month"}
+          {range === "all" && "All Time"}
+          <span className="arrow">▾</span>
+        </div>
+
+        {openDropdown && (
+          <div className="glass-dropdown-menu">
+            <div onClick={() => { setRange("this"); setOpenDropdown(false); }}>
+              This Month
+            </div>
+            <div onClick={() => { setRange("last"); setOpenDropdown(false); }}>
+              Last Month
+            </div>
+            <div onClick={() => { setRange("all"); setOpenDropdown(false); }}>
+              All Time
+            </div>
+          </div>
+        )}
       </div>
-      <div onClick={() => { setRange("last"); setOpenDropdown(false); }}>
-        Last Month
-      </div>
-      <div onClick={() => { setRange("all"); setOpenDropdown(false); }}>
-        All Time
-      </div>
-    </div>
-  )}
-</div>
-     
     </div>
 
     <div className="glass-stats">
@@ -353,39 +482,40 @@ const [openDropdown, setOpenDropdown] = useState(false);
       </div>
     </div>
 
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart
-        data={[
-          { name: "Income", value: analytics.income },
-          { name: "Expense", value: analytics.expense },
-          { name: "Savings", value: analytics.savings },
-        ]}
-      >
-        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-        <XAxis dataKey="name" stroke="#cbd5e1" />
-        <YAxis stroke="#cbd5e1" />
-        <Tooltip
-          contentStyle={{
-            background: "rgba(15, 23, 42, 0.9)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "12px",
-            color: "#fff",
-          }}
-        />
-        <Bar
-          dataKey="value"
-          radius={[16, 16, 0, 0]}
-          animationDuration={1200}
-        >
-          <Cell fill="#22e6a0" />
-          <Cell fill="#ff4d6d" />
-          <Cell fill="#f5a623" />
-        </Bar>
+    
+    <ResponsiveContainer width="100%" height={320}>
+      <BarChart data={chartData}>
+        <defs>
+          <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#22e6a0" />
+            <stop offset="100%" stopColor="#0ea5e9" />
+          </linearGradient>
+
+          <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ff4d6d" />
+            <stop offset="100%" stopColor="#ff8fa3" />
+          </linearGradient>
+
+          <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#facc15" />
+            <stop offset="100%" stopColor="#fb923c" />
+          </linearGradient>
+        </defs>
+
+        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+        <XAxis dataKey="name" stroke="#94a3b8" />
+        <YAxis stroke="#94a3b8" />
+        <Tooltip content={<CustomTooltip />} cursor={false} />
+
+        <Bar dataKey="income" fill="url(#incomeGradient)" radius={[12,12,0,0]} animationDuration={1000} />
+        <Bar dataKey="expense" fill="url(#expenseGradient)" radius={[12,12,0,0]} animationDuration={1000} />
+        <Bar dataKey="savings" fill="url(#savingsGradient)" radius={[12,12,0,0]} animationDuration={1000} />
       </BarChart>
     </ResponsiveContainer>
-  </div>
+
+  </div>   
 )}
+<CategoryChart categoryData={categoryData} />
 
         {!loading && transactions.length > 0 && (
           <div className="card transactions-card">
@@ -460,8 +590,10 @@ const [openDropdown, setOpenDropdown] = useState(false);
           </div>
         )}
       </div>
+      <AIChatbot/>
     </div>
   );
 }
+
 
 export default Dashboard;

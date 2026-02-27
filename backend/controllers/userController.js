@@ -25,7 +25,7 @@ if (!isMatch) {
   return res.status(400).json({ message: "Invalid credentials" });
 }
 
-// 🔐 Generate JWT token
+//  Generate JWT token
 const token = jwt.sign(
   { id: user._id },
   process.env.JWT_SECRET,

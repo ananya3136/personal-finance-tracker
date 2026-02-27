@@ -1,10 +1,6 @@
 const Transaction = require("../models/Transaction");
 const mongoose = require("mongoose");
-const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const axios = require("axios");
 
 const getInsights = async (req, res) => {
   try {
@@ -18,7 +14,6 @@ const getInsights = async (req, res) => {
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
 
-    // Fetch transactions for that month
     const transactions = await Transaction.find({
       user: req.user,
       date: { $gte: startDate, $lt: endDate }
@@ -28,16 +23,12 @@ const getInsights = async (req, res) => {
     let totalExpense = 0;
 
     transactions.forEach((t) => {
-      if (t.type === "income") {
-        totalIncome += t.amount;
-      } else {
-        totalExpense += t.amount;
-      }
+      if (t.type === "income") totalIncome += t.amount;
+      else totalExpense += t.amount;
     });
 
     const balance = totalIncome - totalExpense;
 
-    // Category breakdown using aggregation
     const categoryBreakdown = await Transaction.aggregate([
       {
         $match: {
@@ -54,41 +45,34 @@ const getInsights = async (req, res) => {
       }
     ]);
 
-    // Prepare AI prompt
     const prompt = `
 You are a professional financial advisor.
 
 Here is the user's financial data for ${month}:
 
-Total Income: ${totalIncome}
-Total Expense: ${totalExpense}
-Balance: ${balance}
+Total Income: ₹${totalIncome}
+Total Expense: ₹${totalExpense}
+Balance: ₹${balance}
 
 Category Breakdown:
-${categoryBreakdown.map(c => `${c._id}: ${c.total}`).join("\n")}
+${categoryBreakdown.map(c => `${c._id}: ₹${c.total}`).join("\n")}
 
 Give a short financial insight (3-4 sentences).
 Be practical, actionable, and clear.
 `;
 
-    // Call OpenAI API
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      
-      messages: [
-        { role: "system", content: "You are a helpful financial advisor." },
-        { role: "user", content: prompt }
-      ]
+    const llamaResponse = await axios.post("http://localhost:11434/api/generate", {
+      model: "llama3",
+      prompt,
+      stream: false
     });
-
-    const summaryText = completion.choices[0].message.content;
 
     res.status(200).json({
       totalIncome,
       totalExpense,
       balance,
       categoryBreakdown,
-      insight: summaryText
+      insight: llamaResponse.data.response
     });
 
   } catch (error) {

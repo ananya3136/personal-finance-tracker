@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const getAnalytics = async (req, res) => {
   try {
-    const userId = new mongoose.Types.ObjectId(req.user);
+    const userId = new mongoose.Types.ObjectId(req.user._id);
 
     const transactions = await Transaction.find({ user: userId });
 
@@ -26,5 +26,4 @@ const getAnalytics = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-console.log("Range received:, req.query.range");
 module.exports = { getAnalytics };

@@ -12,7 +12,7 @@ const getPrediction = async (req, res) => {
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
 
-    // 🔥 FILTER BY USER + MONTH
+    // FILTER BY USER + MONTH
     const transactions = await Transaction.find({
       user: req.user,
       date: { $gte: startDate, $lt: endDate }
