@@ -38,6 +38,8 @@ app.use("/api/health-score", healthRoutes);
 app.use("/api/strategy", strategyRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/analytics", analyticsRoutes);
+// Add this line temporarily in server.js BEFORE app.use("/api/users", userRoutes)
+app.get("/api/users/me-test", (req, res) => res.json({ works: true }));
 app.use("/api/users", userRoutes);
 
 
