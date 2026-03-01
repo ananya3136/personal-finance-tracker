@@ -100,11 +100,11 @@ function Profile() {
       try {
         setLoading(true);
 
-        const [summaryRes, healthRes, txnRes] = await Promise.all([
-          fetch("/api/transactions/summary", { headers }),
-          fetch(`/api/health-score?month=${CURRENT_MONTH}`, { headers }),
-          fetch("/api/transactions", { headers }),
-        ]);
+       const [summaryRes, healthRes, txnRes] = await Promise.all([
+  fetch(`${API_BASE}/api/transactions/summary`, { headers }),
+  fetch(`${API_BASE}/api/health-score?month=${CURRENT_MONTH}`, { headers }),
+  fetch(`${API_BASE}/api/transactions`, { headers }),
+]);
 
         if (summaryRes.ok) setSummary(await summaryRes.json());
         if (healthRes.ok)  setHealth(await healthRes.json());

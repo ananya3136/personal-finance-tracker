@@ -1,3 +1,4 @@
+import API_BASE from "../config";
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
@@ -108,14 +109,14 @@ function Dashboard() {
         setLoading(true);
         setError(null);
         const [healthRes, predictionRes, transactionRes, recommendationRes, analyticsRes, categoryRes] =
-          await Promise.all([
-            fetch(`/api/health-score?month=${CURRENT_MONTH}`, { headers }),
-            fetch(`/api/predict?month=${CURRENT_MONTH}`, { headers }),
-            fetch(`/api/transactions`, { headers }),
-            fetch(`/api/recommendations?month=${CURRENT_MONTH}`, { headers }),
-            fetch(`/api/analytics?range=${range}`, { headers }),
-            fetch(`/api/transactions/category-summary`, { headers }),
-          ]);
+  await Promise.all([
+    fetch(`${API_BASE}/api/health-score?month=${CURRENT_MONTH}`, { headers }),
+    fetch(`${API_BASE}/api/predict?month=${CURRENT_MONTH}`, { headers }),
+    fetch(`${API_BASE}/api/transactions`, { headers }),
+    fetch(`${API_BASE}/api/recommendations?month=${CURRENT_MONTH}`, { headers }),
+    fetch(`${API_BASE}/api/analytics?range=${range}`, { headers }),
+    fetch(`${API_BASE}/api/transactions/category-summary`, { headers }),
+  ]);
         if (healthRes.ok) setHealth(await healthRes.json());
         if (predictionRes.ok) setPrediction(await predictionRes.json());
         else setPredictionError("Prediction failed.");
@@ -130,7 +131,7 @@ function Dashboard() {
         setLoading(false);
       }
       try {
-        const insightRes = await fetch(`/api/ai/insights`, { headers });
+        const insightRes = await fetch(`${API_BASE}/api/ai/insights`, { headers });
         if (insightRes.ok) { const data = await insightRes.json(); setAiInsight(data.insight); }
       } catch (err) { console.error("AI insight load error:", err); }
     };
@@ -374,10 +375,10 @@ function Dashboard() {
                       const row = document.getElementById(txn._id);
                       row.classList.add("transaction-row--removing");
                       setTimeout(async () => {
-                        await fetch(`/api/transactions/${txn._id}`, {
-                          method: "DELETE",
-                          headers: { Authorization: `Bearer ${token}` },
-                        });
+                       await fetch(`${API_BASE}/api/transactions/${txn._id}`, {
+  method: "DELETE",
+  headers: { Authorization: `Bearer ${token}` },
+});
                         setTransactions(prev => prev.filter(t => t._id !== txn._id));
                       }, 300);
                     }}>✕</button>
