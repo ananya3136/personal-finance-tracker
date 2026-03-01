@@ -5,9 +5,12 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AddTransaction from "./pages/AddTransaction";
 import BudgetPlanner from "./pages/BudgetPlanner";
-
+import{ ThemeProvider} from "./pages/ThemeContext";
+import "./pages/themes.css";
+import Profile from "./pages/Profile";
 function App() {
   return (
+    <ThemeProvider>
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -16,8 +19,10 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/add-transaction" element={<AddTransaction />} />
         <Route path="/budget" element={<BudgetPlanner />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 

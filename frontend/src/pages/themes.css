@@ -1,0 +1,313 @@
+/* ════════════════════════════════════════
+   DEEP SPACE — Dark Theme (default)
+   Deep navy / emerald / violet
+════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg-deep:         #0b1120;
+  --bg-surface:      #111827;
+  --bg-card:         #16213a;
+  --bg-card-hover:   #1c2a47;
+  --border:          rgba(255, 255, 255, 0.06);
+  --accent-green:    #00e5a0;
+  --accent-amber:    #f59e0b;
+  --accent-red:      #ef4444;
+  --accent-blue:     #3b82f6;
+  --text-primary:    #f0f4ff;
+  --text-secondary:  #8b9cbd;
+  --text-muted:      #4a5a7a;
+  --shadow-card:     0 8px 40px rgba(0, 0, 0, 0.45);
+  --glow-green:      rgba(0, 229, 160, 0.15);
+
+  /* Dashboard background */
+  --dash-bg: #0b1120;
+  --dash-bg-gradient:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,160,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.05) 0%, transparent 50%);
+
+  /* Glass card */
+  --glass-bg:     rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.07);
+
+  /* Stat cards */
+  --stat-bg:           rgba(255, 255, 255, 0.04);
+  --stat-income-border: #22e6a0;
+  --stat-expense-border:#ff4d6d;
+  --stat-savings-border:#f5a623;
+
+  /* Skeleton */
+  --skeleton-base:  rgba(255, 255, 255, 0.04);
+  --skeleton-shine: rgba(255, 255, 255, 0.08);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+
+  /* Transaction row */
+  --tx-row-bg:       rgba(255, 255, 255, 0.04);
+  --tx-row-hover:    rgba(255, 255, 255, 0.07);
+  --tx-row-border:   rgba(255, 255, 255, 0.06);
+}
+
+/* ════════════════════════════════════════
+   GOLDEN HOUR — Light Theme
+   Warm cream / amber / coral / teal
+════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg-deep:         #fef3e2;
+  --bg-surface:      #fff8ed;
+  --bg-card:         #ffffff;
+  --bg-card-hover:   #fff4e6;
+  --border:          rgba(180, 120, 60, 0.12);
+  --accent-green:    #059669;
+  --accent-amber:    #d97706;
+  --accent-red:      #dc2626;
+  --accent-blue:     #2563eb;
+  --text-primary:    #1c1410;
+  --text-secondary:  #78553a;
+  --text-muted:      #b08060;
+  --shadow-card:     0 8px 40px rgba(180, 100, 30, 0.12);
+  --glow-green:      rgba(5, 150, 105, 0.1);
+
+  /* Dashboard background */
+  --dash-bg: #fef3e2;
+  --dash-bg-gradient:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(251,146,60,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(234,179,8,0.1) 0%, transparent 50%);
+
+  /* Glass card */
+  --glass-bg:     rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(180, 120, 60, 0.15);
+
+  /* Stat cards */
+  --stat-bg:            rgba(180, 120, 60, 0.06);
+  --stat-income-border: #059669;
+  --stat-expense-border:#dc2626;
+  --stat-savings-border:#d97706;
+
+  /* Skeleton */
+  --skeleton-base:  rgba(180, 120, 60, 0.08);
+  --skeleton-shine: rgba(180, 120, 60, 0.15);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(180, 120, 60, 0.2);
+
+  /* Transaction row */
+  --tx-row-bg:     rgba(180, 120, 60, 0.05);
+  --tx-row-hover:  rgba(180, 120, 60, 0.1);
+  --tx-row-border: rgba(180, 120, 60, 0.1);
+}
+
+/* ════════════════════════════════════════
+   GLOBAL TRANSITIONS — smooth theme swap
+════════════════════════════════════════ */
+*, *::before, *::after {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+/* ════════════════════════════════════════
+   APPLY VARIABLES TO DASHBOARD ELEMENTS
+════════════════════════════════════════ */
+.dashboard {
+  background: var(--dash-bg);
+  background-image: var(--dash-bg-gradient);
+  color: var(--text-primary);
+}
+
+.card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.card__header h3 {
+  color: var(--text-secondary);
+}
+
+.dashboard__title {
+  color: var(--text-primary);
+}
+
+/* Buttons */
+.btn--primary {
+  background: var(--text-primary);
+  color: var(--bg-deep);
+}
+
+.btn--secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .btn--secondary {
+  background: #fff;
+  border-color: rgba(180,120,60,0.2);
+  color: #1c1410;
+}
+
+[data-theme="light"] .btn--primary {
+  background: #1c1410;
+  color: #fef3e2;
+}
+
+/* Health card */
+[data-theme="light"] .health-card {
+  background: linear-gradient(145deg, #fff8ed, #fff3e0);
+}
+
+[data-theme="light"] .health-score__number { color: #1c1410; }
+[data-theme="light"] .health-score__out-of { color: #b08060; }
+[data-theme="light"] .health-score__text   { color: #78553a; }
+
+[data-theme="light"] .health-score__badge {
+  background: rgba(5,150,105,0.1);
+  border-color: rgba(5,150,105,0.25);
+  color: #059669;
+}
+
+[data-theme="light"] .ring-bg { stroke: rgba(180,120,60,0.1); }
+[data-theme="light"] .ring-fill { stroke: #059669; filter: drop-shadow(0 0 8px #059669); }
+
+/* Prediction card */
+[data-theme="light"] .prediction-card { background: linear-gradient(145deg, #fff8ed, #fff3e0); }
+[data-theme="light"] .label { color: #b08060; }
+[data-theme="light"] .prediction-message { color: #78553a; }
+
+/* Recommendation card */
+[data-theme="light"] .recommendation-card {
+  background: linear-gradient(145deg, #fff8ed, #fff3e0);
+  border-color: rgba(180,120,60,0.15);
+}
+[data-theme="light"] .recommendation-title { color: #1c1410; }
+[data-theme="light"] .recommendation-subtitle { color: #b08060; }
+[data-theme="light"] .recommendation-text { color: #78553a; }
+[data-theme="light"] .recommendation-chip { background: rgba(220,38,38,0.08); color: #b45309; }
+[data-theme="light"] .recommendation-chip__value { color: #dc2626; }
+
+/* AI insight card */
+[data-theme="light"] .ai-insight-card {
+  background: linear-gradient(145deg, #fff8ed, #fff3e0);
+  border-color: rgba(180,120,60,0.15);
+}
+[data-theme="light"] .ai-insight-title { color: #1c1410; }
+[data-theme="light"] .ai-insight-sub   { color: #b08060; }
+[data-theme="light"] .ai-insight-section-label { color: #d97706; }
+[data-theme="light"] .ai-insight-section-text  { color: #78553a; }
+[data-theme="light"] .ai-insight-plain         { color: #78553a; }
+
+/* Glass card (analytics) */
+.glass-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+[data-theme="light"] .glass-card {
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(180,100,30,0.12);
+}
+
+[data-theme="light"] .glass-header h3   { color: #1c1410; }
+[data-theme="light"] .glass-dropdown-selected {
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(217,119,6,0.4);
+  color: #1c1410;
+}
+[data-theme="light"] .glass-dropdown-menu {
+  background: rgba(255,248,237,0.98);
+  border-color: rgba(180,120,60,0.15);
+  color: #1c1410;
+}
+[data-theme="light"] .glass-dropdown-menu div:hover {
+  background: rgba(217,119,6,0.1);
+  color: #d97706;
+}
+
+/* Stat boxes */
+.stat { background: var(--stat-bg); }
+.stat span { color: var(--text-secondary); }
+.stat h2   { color: var(--text-primary); }
+.stat.income  { border-left-color: var(--stat-income-border); }
+.stat.expense { border-left-color: var(--stat-expense-border); }
+.stat.savings { border-left-color: var(--stat-savings-border); }
+
+/* Transaction rows */
+.transaction-row {
+  background: var(--tx-row-bg);
+  border-color: var(--tx-row-border);
+}
+.transaction-row:hover { background: var(--tx-row-hover); }
+[data-theme="light"] .transaction-category { color: #1c1410; }
+[data-theme="light"] .transaction-date     { color: #b08060; }
+
+/* Recharts axis */
+[data-theme="light"] .recharts-cartesian-axis-tick text { fill: #78553a; }
+[data-theme="light"] .recharts-cartesian-grid line { stroke: rgba(180,120,60,0.15); }
+
+/* Category chart card */
+[data-theme="light"] .category-chart-card {
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(180,120,60,0.12);
+}
+[data-theme="light"] .category-chart__title-wrap h3 { color: #1c1410; }
+[data-theme="light"] .category-chart__title-wrap p  { color: #b08060; }
+[data-theme="light"] .category-chart__total-label   { color: #b08060; }
+[data-theme="light"] .legend-item__name             { color: #1c1410; }
+[data-theme="light"] .legend-item__amount           { color: #1c1410; }
+[data-theme="light"] .legend-item__pct              { color: #b08060; }
+[data-theme="light"] .legend-item:hover             { background: rgba(180,120,60,0.06); }
+
+/* Chatbot */
+[data-theme="light"] .chatbot-window {
+  background: #fff8ed;
+  border-color: rgba(217,119,6,0.25);
+}
+[data-theme="light"] .chatbot-header {
+  background: linear-gradient(135deg, rgba(217,119,6,0.08), rgba(234,179,8,0.05));
+  border-color: rgba(180,120,60,0.1);
+}
+[data-theme="light"] .chatbot-header__info h4 { color: #1c1410; }
+[data-theme="light"] .chatbot-header__status  { color: #059669; }
+[data-theme="light"] .chatbot-msg--ai .chatbot-msg__bubble {
+  background: rgba(180,120,60,0.06);
+  border-color: rgba(180,120,60,0.12);
+  color: #1c1410;
+}
+[data-theme="light"] .chatbot-msg--user .chatbot-msg__bubble {
+  background: linear-gradient(135deg, rgba(5,150,105,0.12), rgba(5,150,105,0.08));
+  border-color: rgba(5,150,105,0.2);
+  color: #1c1410;
+}
+[data-theme="light"] .chatbot-input-area { background: rgba(180,120,60,0.04); border-color: rgba(180,120,60,0.1); }
+[data-theme="light"] .chatbot-input {
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(180,120,60,0.15);
+  color: #1c1410;
+}
+[data-theme="light"] .chatbot-welcome h3 { color: #1c1410; }
+[data-theme="light"] .chatbot-welcome p  { color: #78553a; }
+[data-theme="light"] .chatbot-suggestion-btn {
+  background: rgba(5,150,105,0.06);
+  border-color: rgba(5,150,105,0.2);
+  color: #059669;
+}
+
+/* Export button */
+[data-theme="light"] .export-btn {
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(180,120,60,0.2);
+  color: #1c1410;
+}
+[data-theme="light"] .export-btn:hover {
+  background: rgba(217,119,6,0.08);
+  border-color: rgba(217,119,6,0.35);
+  color: #d97706;
+}
+[data-theme="light"] .export-dropdown {
+  background: #fff8ed;
+  border-color: rgba(180,120,60,0.15);
+}
+[data-theme="light"] .export-dropdown__item-title { color: #1c1410; }
+[data-theme="light"] .export-dropdown__item:hover { background: rgba(180,120,60,0.05); }

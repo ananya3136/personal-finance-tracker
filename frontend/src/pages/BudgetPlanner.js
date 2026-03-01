@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./BudgetPlanner.css";
+import ThemeToggle from "./ThemeToggle";
 
 const CATEGORIES = [
   "Food", "Rent", "Transport", "Entertainment",
@@ -112,6 +113,7 @@ function BudgetPlanner() {
             </button>
             <h1 className="budget-page__title">Budget Planner</h1>
           </div>
+          <ThemeToggle />
 
           <input
             type="month"

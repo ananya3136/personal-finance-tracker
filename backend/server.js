@@ -38,6 +38,7 @@ app.use("/api/health-score", healthRoutes);
 app.use("/api/strategy", strategyRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/users", userRoutes);
 
 
 //connect mongodb

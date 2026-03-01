@@ -4,8 +4,24 @@ const mongoose = require("mongoose");
 const getAnalytics = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user._id);
+    const { range } = req.query;
 
-    const transactions = await Transaction.find({ user: userId });
+    let filter = { user: userId };
+
+    const now = new Date();
+
+    if (range === "this") {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      filter.date = { $gte: start, $lt: end };
+    } else if (range === "last") {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 1);
+      filter.date = { $gte: start, $lt: end };
+    }
+    // range === "all" — no date filter, fetch everything
+
+    const transactions = await Transaction.find(filter);
 
     let income = 0;
     let expense = 0;
@@ -26,4 +42,5 @@ const getAnalytics = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 module.exports = { getAnalytics };

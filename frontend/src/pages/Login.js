@@ -24,6 +24,8 @@ function Login() {
       const token = response.data.token;
 
       localStorage.setItem("token", token);
+      localStorage.setItem("userName", response.data.user.name);   
+      localStorage.setItem("userEmail", response.data.user.email); 
       navigate("/dashboard");
     } catch (err) {
       setError("Login failed. Please check your email and password.");
