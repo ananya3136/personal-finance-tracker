@@ -4,11 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://finance-tracker-frontend.onrender.com"
-  ],
-  credentials: true
+  origin: "*"
 }));
 app.use(express.json());
 
