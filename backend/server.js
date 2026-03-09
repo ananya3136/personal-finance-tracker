@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -19,8 +18,6 @@ const healthRoutes = require("./routes/healthRoutes");
 const strategyRoutes = require("./routes/strategyRoutes");
 const recommendationRoutes = require("./routes/recommendationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
-
-console.log("Analysis routes loaded:");
 require("./models/User");
 require("./models/Transaction");
 require("./models/Budget");
@@ -45,7 +42,6 @@ app.use("/api/analytics", analyticsRoutes);
 
 //connect mongodb
 const mongoose = require("mongoose");
-
 mongoose
 .connect(process.env.MONGO_URI)
 .then(()=> console.log("MongoDB connected"))

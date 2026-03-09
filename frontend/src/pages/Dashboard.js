@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
@@ -16,6 +15,7 @@ import AIChatbot from "./AIChatbot";
 import ExportButton from "./ExportButton";
 import CategoryChart from "./CategoryChart";
 import ThemeToggle from "./ThemeToggle";
+const API_BASE = "http://localhost:5000/api";
 const CURRENT_MONTH = "2026-02";
 const CIRCUMFERENCE = 2 * Math.PI * 90;
 
@@ -110,12 +110,12 @@ function Dashboard() {
         setError(null);
         const [healthRes, predictionRes, transactionRes, recommendationRes, analyticsRes, categoryRes] =
   await Promise.all([
-    fetch(`${API_BASE}/api/health-score?month=${CURRENT_MONTH}`, { headers }),
-    fetch(`${API_BASE}/api/predict?month=${CURRENT_MONTH}`, { headers }),
-    fetch(`${API_BASE}/api/transactions`, { headers }),
-    fetch(`${API_BASE}/api/recommendations?month=${CURRENT_MONTH}`, { headers }),
-    fetch(`${API_BASE}/api/analytics?range=${range}`, { headers }),
-    fetch(`${API_BASE}/api/transactions/category-summary`, { headers }),
+    fetch(`${API_BASE}/health-score?month=${CURRENT_MONTH}`, { headers }),
+    fetch(`${API_BASE}/predict?month=${CURRENT_MONTH}`, { headers }),
+    fetch(`${API_BASE}/transactions`, { headers }),
+    fetch(`${API_BASE}/recommendations?month=${CURRENT_MONTH}`, { headers }),
+    fetch(`${API_BASE}/analytics?range=${range}`, { headers }),
+    fetch(`${API_BASE}/transactions/category-summary`, { headers }),
   ]);
         if (healthRes.ok) setHealth(await healthRes.json());
         if (predictionRes.ok) setPrediction(await predictionRes.json());
@@ -131,7 +131,7 @@ function Dashboard() {
         setLoading(false);
       }
       try {
-        const insightRes = await fetch(`${API_BASE}/api/ai/insights`, { headers });
+        const insightRes = await fetch(`${API_BASE}/ai/insights`, { headers });
         if (insightRes.ok) { const data = await insightRes.json(); setAiInsight(data.insight); }
       } catch (err) { console.error("AI insight load error:", err); }
     };
@@ -375,7 +375,7 @@ function Dashboard() {
                       const row = document.getElementById(txn._id);
                       row.classList.add("transaction-row--removing");
                       setTimeout(async () => {
-                       await fetch(`${API_BASE}/api/transactions/${txn._id}`, {
+                       await fetch(`${API_BASE}/transactions/${txn._id}`, {
   method: "DELETE",
   headers: { Authorization: `Bearer ${token}` },
 });
