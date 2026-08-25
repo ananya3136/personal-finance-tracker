@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Sparkles, X } from "lucide-react";
 import "./AIChatbot.css";
 
 const SUGGESTIONS = [
@@ -70,13 +71,16 @@ function AIChatbot() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Launcher Button */}
       <button
         className={`chatbot-fab ${isOpen ? "chatbot-fab--open" : ""}`}
         onClick={() => setIsOpen((prev) => !prev)}
         title="AI Financial Assistant"
       >
-        <span className="chatbot-fab__icon">{isOpen ? "✕" : "🤖"}</span>
+        <span className="chatbot-fab__pulse-ring" />
+        <span className="chatbot-fab__icon">
+          {isOpen ? <X size={22} /> : <Sparkles size={24} className="text-[#00E599]" />}
+        </span>
       </button>
 
       {/* Chat Window */}

@@ -21,16 +21,14 @@
 
 .budget-page {
   min-height: 100vh;
-  background: var(--bg-deep);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,160,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.05) 0%, transparent 50%);
-  font-family: 'Sora', sans-serif;
-  color: var(--text-primary);
+  background-color: #080C0B;
+  background-image: radial-gradient(ellipse at top, rgba(6, 78, 59, 0.25) 0%, transparent 65%);
+  font-family: 'Inter', 'Sora', sans-serif;
+  color: #ffffff;
 }
 
 .budget-page__content {
-  max-width: 860px;
+  max-width: 920px;
   margin: 0 auto;
   padding: 36px 24px 80px;
   display: flex;
@@ -52,65 +50,69 @@
 }
 
 .budget-page__back {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: var(--text-secondary);
+  color: #d1d5db;
   font-family: 'Sora', sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   padding: 10px 16px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s ease;
+  backdrop-filter: blur(12px);
 }
 
 .budget-page__back:hover {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 229, 153, 0.35);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 .budget-page__title {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 /* month picker */
 .budget-month-pick {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #111715;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: var(--text-primary);
+  color: #ffffff;
   font-family: 'Sora', sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   padding: 10px 14px;
   cursor: pointer;
   outline: none;
-  transition: var(--transition);
+  transition: all 0.25s ease;
 }
 
 .budget-month-pick:focus {
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px rgba(0,229,160,0.12);
+  border-color: #00E599;
+  box-shadow: 0 0 0 2px rgba(0, 229, 153, 0.25);
 }
 
 /* ── SET BUDGET FORM CARD ── */
 .budget-form-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: rgba(18, 24, 22, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1.25rem;
   padding: 28px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   animation: fadeUp 0.4s ease both;
 }
 
 .budget-form-card h2 {
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.8rem;
   margin-bottom: 20px;
 }
 
@@ -130,7 +132,7 @@
 .budget-form__label {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.07em;
 }
@@ -138,51 +140,52 @@
 .budget-form__select,
 .budget-form__input {
   padding: 12px 16px;
-  background: rgba(15,23,42,0.6);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: #111715;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: var(--text-primary);
+  color: #ffffff;
   font-family: 'Sora', sans-serif;
   font-size: 0.9rem;
   outline: none;
-  transition: var(--transition);
+  transition: all 0.25s ease;
 }
 
 .budget-form__select:focus,
 .budget-form__input:focus {
-  border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px rgba(0,229,160,0.12);
+  border-color: #00E599;
+  box-shadow: 0 0 0 2px rgba(0, 229, 153, 0.25);
 }
 
 .budget-form__select {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5a7a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 36px;
 }
 
-.budget-form__select option { background: #1e293b; }
+.budget-form__select option { background: #111715; color: #ffffff; }
 
 .budget-form__submit {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #00e5a0, #00c97d);
+  background: #00E599;
   border: none;
   border-radius: 12px;
-  color: #0b1120;
+  color: #000000;
   font-family: 'Sora', sans-serif;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s ease;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(0,229,160,0.35);
+  box-shadow: 0 0 20px rgba(0, 229, 153, 0.3);
 }
 
 .budget-form__submit:hover:not(:disabled) {
+  filter: brightness(1.1);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,229,160,0.5);
+  box-shadow: 0 0 25px rgba(0, 229, 153, 0.45);
 }
 
 .budget-form__submit:disabled {

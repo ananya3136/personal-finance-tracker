@@ -1,38 +1,61 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── FLOATING BUTTON ── */
+/* ── FLOATING BUTTON (SLEEK GLOWING LAUNCHER) ── */
 .chatbot-fab {
   position: fixed;
   bottom: 32px;
   right: 32px;
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00e5a0, #00c97d);
-  border: none;
+  background: rgba(18, 24, 22, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 229, 153, 0.3);
+  color: #00E599;
   cursor: pointer;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 24px rgba(0, 229, 160, 0.45), 0 0 0 0 rgba(0, 229, 160, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  animation: fabPulse 2.5s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(0, 229, 153, 0.25), 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
 }
 
 .chatbot-fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 32px rgba(0, 229, 160, 0.6), 0 0 0 8px rgba(0, 229, 160, 0.1);
-  animation: none;
+  transform: scale(1.08) translateY(-2px);
+  border-color: rgba(0, 229, 153, 0.6);
+  box-shadow: 0 0 30px rgba(0, 229, 153, 0.45), 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
-@keyframes fabPulse {
-  0%, 100% { box-shadow: 0 4px 24px rgba(0,229,160,0.45), 0 0 0 0 rgba(0,229,160,0.3); }
-  50% { box-shadow: 0 4px 24px rgba(0,229,160,0.45), 0 0 0 10px rgba(0,229,160,0.0); }
+.chatbot-fab__pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 229, 153, 0.4);
+  animation: pulseRing 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
 }
 
 .chatbot-fab__icon {
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.3s ease;
 }
 

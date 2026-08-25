@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap');
 
 .category-chart-card {
-  margin-top: 24px;
+  margin-top: 0;
   padding: 28px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: #121815;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
   transition: all 0.3s ease;
 }
 
 .category-chart-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0, 229, 160, 0.08);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);
 }
 
 /* ── HEADER ── */
@@ -27,14 +27,14 @@
 .category-chart__title-wrap h3 {
   font-family: 'Sora', sans-serif;
   font-size: 1rem;
-  font-weight: 700;
-  color: #f0f4ff;
+  font-weight: 600;
+  color: #f3f4f6;
   margin: 0 0 4px 0;
 }
 
 .category-chart__title-wrap p {
   font-size: 0.78rem;
-  color: #4a5a7a;
+  color: #9ca3af;
   margin: 0;
 }
 
@@ -44,7 +44,7 @@
 
 .category-chart__total-label {
   font-size: 0.72rem;
-  color: #4a5a7a;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 600;
@@ -67,6 +67,37 @@
 
 .category-chart__pie {
   flex-shrink: 0;
+  position: relative;
+}
+
+.donut-center-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+  width: 110px;
+}
+
+.donut-center-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.donut-center-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 2px;
 }
 
 /* ── LEGEND ── */
@@ -100,13 +131,13 @@
 }
 
 .legend-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .legend-item--active {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .legend-item__left {
@@ -125,9 +156,9 @@
 
 .legend-item__name {
   font-family: 'Sora', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: #d1daf0;
+  color: #e5e7eb;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -143,14 +174,14 @@
 
 .legend-item__amount {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #f0f4ff;
+  color: #ffffff;
 }
 
 .legend-item__pct {
-  font-size: 0.7rem;
-  color: #4a5a7a;
+  font-size: 0.75rem;
+  color: #9ca3af;
   font-weight: 500;
 }
 

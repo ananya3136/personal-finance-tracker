@@ -20,8 +20,7 @@
    GRID
 =========================================== */
 
-.grid{
-
+.animated-bg .grid {
     position:absolute;
     inset:0;
 
@@ -34,7 +33,6 @@
     mask-image:radial-gradient(circle,#fff 40%,transparent 100%);
 
     opacity:.45;
-
 }
 
 /* ===========================================

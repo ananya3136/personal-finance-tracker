@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import CountUp from "react-countup";
 import "./Dashboard.css";
 import {
   ResponsiveContainer,
@@ -11,7 +12,6 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { Cell } from "recharts";
 import {
   Sparkles,
   Wallet,
@@ -20,7 +20,6 @@ import {
   User,
   LogOut,
   TrendingUp,
-  TrendingDown,
   PiggyBank,
   ArrowUpRight,
   ArrowDownRight,
@@ -39,21 +38,6 @@ const API_BASE = "http://localhost:5000/api";
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7);
 const CIRCUMFERENCE = 2 * Math.PI * 90;
 
-const useCountUp = (value, duration = 800) => {
-  const [displayValue, setDisplayValue] = useState(0);
-  useEffect(() => {
-    let start = 0;
-    const increment = value / (duration / 16);
-    const counter = setInterval(() => {
-      start += increment;
-      if (start >= value) { start = value; clearInterval(counter); }
-      setDisplayValue(Math.floor(start));
-    }, 16);
-    return () => clearInterval(counter);
-  }, [value, duration]);
-  return displayValue;
-};
-
 function getGrade(score) {
   if (score >= 90) return "A+";
   if (score >= 80) return "A";
@@ -62,24 +46,43 @@ function getGrade(score) {
   return "D";
 }
 
+
+
 function HealthRing({ score }) {
-  const ringRef = useRef(null);
   const offset = CIRCUMFERENCE - (score / 100) * CIRCUMFERENCE;
-  useEffect(() => {
-    if (ringRef.current) {
-      setTimeout(() => { ringRef.current.style.strokeDashoffset = offset; }, 100);
-    }
-  }, [offset]);
   return (
     <div className="health-score__ring">
-      <svg viewBox="0 0 200 200" width="200" height="200">
-        <circle className="ring-bg" cx="100" cy="100" r="90" />
-        <circle ref={ringRef} className="ring-fill" cx="100" cy="100" r="90"
-          style={{ strokeDasharray: CIRCUMFERENCE, strokeDashoffset: CIRCUMFERENCE }} />
+      <svg viewBox="0 0 200 200" width="180" height="180">
+        <defs>
+          <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00E599" />
+            <stop offset="100%" stopColor="#10B981" />
+          </linearGradient>
+          <filter id="healthGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <circle className="ring-bg" cx="100" cy="100" r="90" stroke="rgba(255,255,255,0.06)" strokeWidth="10" fill="none" />
+        <circle 
+          className="ring-fill" 
+          cx="100" 
+          cy="100" 
+          r="90"
+          stroke="url(#healthGradient)"
+          strokeWidth="10"
+          strokeLinecap="round"
+          fill="none"
+          filter="url(#healthGlow)"
+          style={{ strokeDasharray: CIRCUMFERENCE, strokeDashoffset: offset, transition: "stroke-dashoffset 1s ease-out" }} 
+        />
       </svg>
       <div className="health-score__inner">
-        <div className="health-score__number">{score}</div>
-        <div className="health-score__out-of">out of 100</div>
+        <div className="text-4xl font-extrabold text-white font-mono leading-none">{score}</div>
+        <div className="text-xs text-gray-400 font-medium mt-1">out of 100</div>
       </div>
     </div>
   );
@@ -96,18 +99,6 @@ const CustomTooltip = ({ active, payload }) => {
       ))}
     </div>
   );
-};
-
-// Shared motion presets so every card enters with the same, deliberate rhythm
-const fadeUpIn = {
-  initial: { opacity: 0, y: 36 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
-  transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-};
-
-const lift = {
-  whileHover: { y: -6, transition: { duration: 0.25 } },
 };
 
 function Dashboard() {
@@ -127,9 +118,7 @@ function Dashboard() {
 
   const userName = (typeof window !== "undefined" && localStorage.getItem("userName")) || "";
 
-  const incomeAnimated = useCountUp(analytics?.income || 0);
-  const expenseAnimated = useCountUp(analytics?.expense || 0);
-  const savingsAnimated = useCountUp(analytics?.savings || 0);
+  const balance = (analytics?.income || 0) - (analytics?.expense || 0);
 
   const chartData = analytics ? [{ name: "Overview", income: analytics.income || 0, expense: analytics.expense || 0, savings: analytics.savings || 0 }] : [];
 
@@ -181,294 +170,389 @@ function Dashboard() {
   };
 
   return (
-    <motion.div
-      className="dashboard"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-    >
-      {/* Ambient glow orbs, echoing the homepage hero background */}
-      <div className="dashboard__glow dashboard__glow--a" />
-      <div className="dashboard__glow dashboard__glow--b" />
-
-      <div className="dashboard__content">
-
-        {/* ── HERO HEADER ───────────────────────── */}
-        <motion.header
-          className="dashboard__header"
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="dashboard__header-left">
-            <div>
-              <div className="dashboard__tag">
-                <Sparkles size={13} />
-                FINOVA • Live Dashboard
-              </div>
-              <h1 className="dashboard__title">
-                Welcome back{userName ? `, ${userName}` : ""} 👋
-              </h1>
-              <p className="dashboard__subtitle">
-                Here's your financial overview for today.
-              </p>
-            </div>
+    <div className="dashboard-container w-full max-w-7xl mx-auto px-4 py-8 space-y-6 min-h-screen relative">
+      {/* 1. TOP NAVIGATION BAR */}
+      <nav className="w-full max-w-7xl flex items-center justify-between py-4 mb-4 border-b border-white/10 relative z-10 flex-wrap gap-4">
+        {/* Left: Finova Logo & Title */}
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+          <div className="w-10 h-10 rounded-xl bg-[#181818] border border-white/10 flex items-center justify-center shadow-lg transition-transform hover:rotate-[-6deg] hover:scale-105">
+            <svg width="28" height="28" viewBox="0 0 64 64">
+              <rect x="6" y="6" width="52" height="52" rx="16" fill="#181818" stroke="#2c2c2c" strokeWidth="2" />
+              <path d="M22 18H42V24H28V31H38V37H28V46H22V18Z" fill="#22C55E" />
+            </svg>
           </div>
-
-          <div className="dashboard__actions">
-            <ThemeToggle />
-            <ExportButton transactions={transactions} />
-            <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} className="btn btn--secondary" onClick={() => navigate("/budget")}>
-              <Target size={15} /> Budgets
-            </motion.button>
-            <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} className="btn btn--primary" onClick={() => navigate("/add-transaction")}>
-              <Plus size={15} /> Add
-            </motion.button>
-            <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} className="btn btn--secondary" onClick={() => navigate("/profile")}>
-              <User size={15} /> Profile
-            </motion.button>
-            <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} className="btn btn--ghost" onClick={handleLogout}>
-              <LogOut size={15} /> Logout
-            </motion.button>
+          <div>
+            <h2 className="text-xl font-extrabold text-white leading-none tracking-tight">FINOVA</h2>
+            <p className="text-[10px] text-gray-400 tracking-[0.25em] uppercase mt-0.5">SMART FINANCE</p>
           </div>
-        </motion.header>
+        </div>
 
-        <AnimatePresence>
-          {error && (
-            <motion.div className="error" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              {error}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Right: Date selector, Theme switch, Action Buttons */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Date Selector */}
+          <div className="relative">
+            <button 
+              onClick={() => setOpenDropdown(!openDropdown)}
+              className="navbar-action-btn flex items-center gap-2"
+            >
+              <Sparkles size={15} className="text-emerald-400" />
+              <span>
+                {range === "this" && "This Month"}
+                {range === "last" && "Last Month"}
+                {range === "all" && "All Time"}
+              </span>
+              <ChevronDown size={14} className={`transition-transform duration-200 ${openDropdown ? "rotate-180" : ""}`} />
+            </button>
 
-        {/* ── LOADING SKELETON ───────────────────────── */}
-        {loading && (
-          <div className="dashboard__grid">
-            <div className="skeleton-card span-1">
-              <div className="skeleton-label"></div>
-              <div className="skeleton-ring-wrap"><div className="skeleton-ring"></div></div>
-              <div className="skeleton-badge"></div>
-            </div>
-            <div className="skeleton-card span-1">
-              <div className="skeleton-label"></div>
-              <div className="skeleton-grid"><div className="skeleton-stat"></div><div className="skeleton-stat"></div></div>
-              <div className="skeleton-line"></div>
-            </div>
-            <div className="skeleton-card span-1">
-              <div className="skeleton-label"></div>
-              <div className="skeleton-line"></div>
-              <div className="skeleton-line skeleton-line--short"></div>
-            </div>
-            <div className="skeleton-card span-3">
-              <div className="skeleton-label"></div>
-              <div className="skeleton-grid"><div className="skeleton-stat"></div><div className="skeleton-stat"></div><div className="skeleton-stat"></div></div>
-              <div className="skeleton-chart"></div>
-            </div>
-            <div className="skeleton-card span-3">
-              <div className="skeleton-label"></div>
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="skeleton-tx-row">
-                  <div className="skeleton-tx-left">
-                    <div className="skeleton-dot"></div>
-                    <div><div className="skeleton-line skeleton-line--med"></div><div className="skeleton-line skeleton-line--xs"></div></div>
+            <AnimatePresence>
+              {openDropdown && (
+                <motion.div
+                  className="absolute top-full right-0 mt-2 w-44 bg-[#080C0B]/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-2xl overflow-hidden z-50"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <div 
+                    className={`px-4 py-2.5 text-sm cursor-pointer transition-colors hover:bg-emerald-500/15 hover:text-emerald-400 ${range === "this" ? "bg-emerald-500/20 text-emerald-400 font-semibold" : "text-gray-300"}`}
+                    onClick={() => { setRange("this"); setOpenDropdown(false); }}
+                  >
+                    This Month
                   </div>
-                  <div className="skeleton-line skeleton-line--short"></div>
-                </div>
-              ))}
-            </div>
+                  <div 
+                    className={`px-4 py-2.5 text-sm cursor-pointer transition-colors hover:bg-emerald-500/15 hover:text-emerald-400 ${range === "last" ? "bg-emerald-500/20 text-emerald-400 font-semibold" : "text-gray-300"}`}
+                    onClick={() => { setRange("last"); setOpenDropdown(false); }}
+                  >
+                    Last Month
+                  </div>
+                  <div 
+                    className={`px-4 py-2.5 text-sm cursor-pointer transition-colors hover:bg-emerald-500/15 hover:text-emerald-400 ${range === "all" ? "bg-emerald-500/20 text-emerald-400 font-semibold" : "text-gray-300"}`}
+                    onClick={() => { setRange("all"); setOpenDropdown(false); }}
+                  >
+                    All Time
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          <ThemeToggle />
+
+          {/* Action Buttons */}
+          <button 
+            className="navbar-action-btn navbar-action-btn--primary" 
+            onClick={() => navigate("/add-transaction")}
+          >
+            <Plus size={16} /> Add
+          </button>
+
+          <ExportButton transactions={transactions} />
+
+          <button 
+            className="navbar-action-btn" 
+            onClick={() => navigate("/budget")}
+          >
+            <Target size={15} className="text-emerald-400" /> Budgets
+          </button>
+
+          <button 
+            className="navbar-action-btn" 
+            onClick={() => navigate("/profile")}
+          >
+            <User size={15} className="text-gray-300" /> {userName ? userName : "Profile"}
+          </button>
+
+          <button 
+            className="navbar-action-btn hover:border-red-500/40 hover:text-red-400" 
+            onClick={handleLogout}
+          >
+            <LogOut size={15} /> Logout
+          </button>
+        </div>
+      </nav>
+
+      {/* 2. GREETING BANNER SECTION */}
+      <div className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full w-fit mb-3">
+            <Sparkles size={13} /> FINOVA • Live Dashboard
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+            Welcome back{userName ? `, ${userName}` : ""}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="inline-block animate-wave drop-shadow-[0_0_10px_#00E599]">
+              <defs>
+                <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#00E599" />
+                  <stop offset="100%" stopColor="#10B981" />
+                </linearGradient>
+              </defs>
+              <path d="M12 2a1 1 0 0 1 1 1v7.5a.5.5 0 0 0 1 0V3a1 1 0 0 1 2 0v7.5a.5.5 0 0 0 1 0V4.5a1 1 0 0 1 2 0v7.5a.5.5 0 0 0 1 0V7a1 1 0 0 1 2 0v8a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7v-6a1 1 0 0 1 1-1h.08a1 1 0 0 1 .92.62L8 11.5a.5.5 0 0 0 1-.36V3a1 1 0 0 1 1-1Z" fill="url(#waveGradient)" />
+            </svg>
+          </h1>
+          <p className="text-sm text-gray-400 mt-1">Here's your financial overview for today.</p>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {error && (
+          <motion.div className="w-full max-w-7xl p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {error}
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* ── BENTO GRID ───────────────────────── */}
-        {!loading && (
-          <div className="dashboard__grid">
+      {/* 3. KPI METRICS ROW */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+        {/* Total Balance Card */}
+        <div className="dashboard-metric-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Balance</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Wallet size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white tracking-tight font-mono">
+            ₹<CountUp end={balance} duration={1} separator="," />
+          </div>
+          <div className="text-xs text-emerald-400 font-medium mt-2 flex items-center gap-1">
+            <TrendingUp size={13} /> Active balance overview
+          </div>
+        </div>
 
-            {health && (
-              <motion.div className="card health-card span-1" {...fadeUpIn} {...lift}>
-                <div className="card__header">
-                  <h3><Award size={13} /> Financial Health</h3>
-                </div>
-                <div className="health-score">
-                  <HealthRing score={health.score} />
-                  <div className="health-score__badge">
-                    <Award size={16} />
-                    Grade {getGrade(health.score)}
-                  </div>
-                  <div className="health-score__text">{health.message}</div>
-                </div>
-              </motion.div>
-            )}
+        {/* Total Income Card */}
+        <div className="dashboard-metric-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Income</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <ArrowUpRight size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-emerald-400 tracking-tight font-mono">
+            ₹<CountUp end={analytics?.income || 0} duration={1} separator="," />
+          </div>
+          <div className="text-xs text-gray-400 font-medium mt-2">
+            Earnings & cash inflows
+          </div>
+        </div>
 
-            {prediction && (
-              <motion.div className="card prediction-card span-1" {...fadeUpIn} {...lift}>
-                <div className="card__header">
-                  <h3><Activity size={13} /> Spending Prediction</h3>
-                  <div className="card__header-icon"><TrendingUp size={16} color="#0b1120" /></div>
-                </div>
-                <div className="prediction-stats">
+        {/* Total Expense Card */}
+        <div className="dashboard-metric-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Expense</span>
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+              <ArrowDownRight size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-rose-400 tracking-tight font-mono">
+            ₹<CountUp end={analytics?.expense || 0} duration={1} separator="," />
+          </div>
+          <div className="text-xs text-gray-400 font-medium mt-2">
+            Outflows & expenditures
+          </div>
+        </div>
+
+        {/* Net Savings Card */}
+        <div className="dashboard-metric-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Net Savings</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+              <PiggyBank size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-amber-400 tracking-tight font-mono">
+            ₹<CountUp end={analytics?.savings || 0} duration={1} separator="," />
+          </div>
+          <div className="text-xs text-gray-400 font-medium mt-2">
+            Retained capital
+          </div>
+        </div>
+      </div>
+
+      {/* 4. 2-COLUMN MAIN DASHBOARD AREA */}
+      <div className="dashboard-main-grid w-full grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+
+          {/* LEFT COLUMN (Span 8 Cols) */}
+          <div className="dashboard-left-col w-full lg:col-span-8 space-y-6">
+            {/* Main Financial Overview Chart */}
+            {analytics && (
+              <div className="w-full dashboard-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                   <div>
-                    <span className="label">Spent</span>
-                    <div className="value value--danger">₹{prediction.currentExpense}</div>
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                      <Activity size={18} className="text-emerald-400" /> Financial Overview
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-1">Comparison of income, expense, and net savings</p>
                   </div>
-                  <div>
-                    <span className="label">Projected</span>
-                    <div className="value value--warning">₹{prediction.projectedExpense}</div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5">
+                    <Sparkles size={13} /> {range === "this" ? "This Month" : range === "last" ? "Last Month" : "All Time"}
                   </div>
                 </div>
-                <p className="prediction-message">{prediction.message}</p>
-              </motion.div>
-            )}
 
-            {recommendation && (
-              <motion.div className="card recommendation-card span-1" {...fadeUpIn} {...lift}>
-                <div className="recommendation-header">
-                  <div>
-                    <h3 className="recommendation-title"><Sparkles size={15} /> Smart Advice</h3>
-                    <p className="recommendation-subtitle">AI-powered monthly analysis</p>
-                  </div>
-                </div>
-                <div className="savings-badge">
-                  {recommendation?.savingsRate || 0}%
-                  <span>Savings Rate</span>
-                </div>
-                <div className="recommendation-body">
-                  <div className="recommendation-chip">
-                    Top Expense:
-                    <span className="recommendation-chip__value">{recommendation?.topExpenseCategory || "No expense data"}</span>
-                  </div>
-                  <p className="recommendation-text">{recommendation?.advice || ""}</p>
-                </div>
-              </motion.div>
-            )}
-
-            <motion.div className="card ai-insight-card span-3" {...fadeUpIn} {...lift}>
-              <div className="ai-insight-header">
-                <div className="ai-insight-icon"><Brain size={22} /></div>
-                <div>
-                  <h3 className="ai-insight-title">AI Financial Intelligence</h3>
-                  <p className="ai-insight-sub">Powered by your financial data</p>
+                <div className="w-full min-w-0 h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <defs>
+                        <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#00E599" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                        <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FF5C5C" />
+                          <stop offset="100%" stopColor="#DC2626" />
+                        </linearGradient>
+                        <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FBBF24" />
+                          <stop offset="100%" stopColor="#D97706" />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#64748B" />
+                      <YAxis stroke="#64748B" />
+                      <Tooltip content={<CustomTooltip />} cursor={false} />
+                      <Bar dataKey="income" fill="url(#incomeGradient)" radius={[12, 12, 4, 4]} animationDuration={1000} />
+                      <Bar dataKey="expense" fill="url(#expenseGradient)" radius={[12, 12, 4, 4]} animationDuration={1000} />
+                      <Bar dataKey="savings" fill="url(#savingsGradient)" radius={[12, 12, 4, 4]} animationDuration={1000} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
-              <div className="ai-insight-body">
+            )}
+
+            {/* Spending Category Breakdown */}
+            <div className="w-full">
+              <CategoryChart categoryData={categoryData} />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN (Span 4 Cols) */}
+          <div className="dashboard-right-col w-full lg:col-span-4 space-y-6">
+            {/* Financial Health Gauge */}
+            {health && (
+              <div className="dashboard-card health-card text-center bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                  <h3 className="text-base font-semibold text-gray-100 tracking-wide flex items-center gap-2">
+                    <Award size={15} className="text-emerald-400" /> Financial Health
+                  </h3>
+                  <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                    Grade {getGrade(health.score)}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center gap-4 py-2">
+                  <HealthRing score={health.score} />
+                  <p className="text-sm text-gray-300 text-center max-w-xs leading-relaxed">{health.message}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Spending Projection Card */}
+            {prediction && (
+              <div className="dashboard-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                  <h3 className="text-base font-semibold text-gray-100 tracking-wide flex items-center gap-2">
+                    <TrendingUp size={15} className="text-amber-400" /> Spending Projection
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mb-2">
+                  <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Spent</span>
+                    <div className="text-sm font-bold text-rose-400 font-mono mt-0.5">₹{prediction.currentExpense}</div>
+                  </div>
+                  <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Projected</span>
+                    <div className="text-sm font-bold text-amber-400 font-mono mt-0.5">₹{prediction.projectedExpense}</div>
+                  </div>
+                </div>
+                {predictionError && <p className="text-xs text-rose-400 mt-1">{predictionError}</p>}
+                <p className="text-sm text-gray-300 leading-relaxed mt-1">{prediction.message}</p>
+              </div>
+            )}
+
+            {/* AI Intelligence Card */}
+            <div className="dashboard-card ai-insight-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <Brain size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-100 tracking-wide">AI Financial Intelligence</h3>
+                  <p className="text-xs text-emerald-400 font-medium">Smart Automated Insights</p>
+                </div>
+              </div>
+
+              <div className="text-sm text-gray-300 space-y-3 max-h-72 overflow-y-auto pr-1">
                 {aiInsight ? (
                   aiInsight.split(/\n+/).filter(line => line.trim()).map((line, i) => {
                     const headerMatch = line.match(/^\*\*(.+?):\*\*\s*(.*)/);
                     if (headerMatch) {
                       return (
-                        <div key={i} className="ai-insight-section">
-                          <div className="ai-insight-section-label">{headerMatch[1]}</div>
+                        <div key={i} className="bg-white/5 border border-white/5 border-l-2 border-l-emerald-500 rounded-r-xl p-3">
+                          <div className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">{headerMatch[1]}</div>
                           {headerMatch[2] && (
-                            <p className="ai-insight-section-text"
-                              dangerouslySetInnerHTML={{ __html: headerMatch[2].replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') }} />
+                            <p className="text-sm text-gray-300 leading-relaxed"
+                              dangerouslySetInnerHTML={{ __html: headerMatch[2].replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>') }} />
                           )}
                         </div>
                       );
                     }
                     return (
-                      <p key={i} className="ai-insight-plain"
-                        dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') }} />
+                      <p key={i} className="text-sm text-gray-300 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>') }} />
                     );
                   })
                 ) : (
-                  <div className="ai-insight-loading">
-                    <div className="ai-insight-spinner" />
-                    <p>Analyzing your finances... this may take a moment.</p>
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2" />
+                    <p className="text-xs text-gray-400">Analyzing your finances...</p>
+                  </div>
+                )}
+
+                {recommendation && (
+                  <div className="mt-4 pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                      <div>
+                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Savings Rate</span>
+                        <div className="text-lg font-bold text-emerald-400">{recommendation.savingsRate}%</div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Top Expense</span>
+                        <div className="text-xs font-medium text-rose-400">{recommendation.topExpenseCategory || "N/A"}</div>
+                      </div>
+                    </div>
+                    {recommendation.advice && (
+                      <p className="text-sm text-gray-300 italic mt-2 bg-white/5 p-2.5 rounded-lg border border-white/5">
+                        "{recommendation.advice}"
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
-            </motion.div>
-
-            {analytics && (
-              <motion.div className="card analytics-card span-3" {...fadeUpIn} {...lift}>
-                <div className="glass-header">
-                  <h3>Financial Overview</h3>
-                  <div className="glass-dropdown">
-                    <div className="glass-dropdown-selected" onClick={() => setOpenDropdown(!openDropdown)}>
-                      {range === "this" && "This Month"}
-                      {range === "last" && "Last Month"}
-                      {range === "all" && "All Time"}
-                      <ChevronDown size={14} className={`arrow ${openDropdown ? "arrow--open" : ""}`} />
-                    </div>
-                    <AnimatePresence>
-                      {openDropdown && (
-                        <motion.div
-                          className="glass-dropdown-menu"
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.18 }}
-                        >
-                          <div onClick={() => { setRange("this"); setOpenDropdown(false); }}>This Month</div>
-                          <div onClick={() => { setRange("last"); setOpenDropdown(false); }}>Last Month</div>
-                          <div onClick={() => { setRange("all"); setOpenDropdown(false); }}>All Time</div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                <div className="glass-stats">
-                  <div className="stat income">
-                    <div className="stat__icon"><ArrowUpRight size={16} /></div>
-                    <div><span>Income</span><h2>₹{incomeAnimated}</h2></div>
-                  </div>
-                  <div className="stat expense">
-                    <div className="stat__icon"><ArrowDownRight size={16} /></div>
-                    <div><span>Expense</span><h2>₹{expenseAnimated}</h2></div>
-                  </div>
-                  <div className="stat savings">
-                    <div className="stat__icon"><PiggyBank size={16} /></div>
-                    <div><span>Savings</span><h2>₹{savingsAnimated}</h2></div>
-                  </div>
-                </div>
-
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={chartData}>
-                    <defs>
-                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#22C55E" /><stop offset="100%" stopColor="#0ea5e9" />
-                      </linearGradient>
-                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#ff4d6d" /><stop offset="100%" stopColor="#ff8fa3" />
-                      </linearGradient>
-                      <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#facc15" /><stop offset="100%" stopColor="#fb923c" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis dataKey="name" stroke="#94a3b8" />
-                    <YAxis stroke="#94a3b8" />
-                    <Tooltip content={<CustomTooltip />} cursor={false} />
-                    <Bar dataKey="income" fill="url(#incomeGradient)" radius={[12, 12, 0, 0]} animationDuration={1000} />
-                    <Bar dataKey="expense" fill="url(#expenseGradient)" radius={[12, 12, 0, 0]} animationDuration={1000} />
-                    <Bar dataKey="savings" fill="url(#savingsGradient)" radius={[12, 12, 0, 0]} animationDuration={1000} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </motion.div>
-            )}
-
-            <div className="span-3">
-              <CategoryChart categoryData={categoryData} />
             </div>
 
+            {/* Recent Transactions Stream */}
             {transactions.length > 0 && (
-              <motion.div className="card span-3" {...fadeUpIn} {...lift}>
-                <div className="card__header"><h3><Wallet size={13} /> Recent Transactions</h3></div>
-                <div className="transactions-list">
+              <div className="dashboard-card bg-[#121815] border border-white/10 rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
+                  <h3 className="text-base font-semibold text-gray-100 tracking-wide flex items-center gap-2">
+                    <Wallet size={15} className="text-emerald-400" /> Recent Activity
+                  </h3>
+                  <span className="text-xs text-gray-400 font-mono">{transactions.length} items</span>
+                </div>
+
+                <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
                   {transactions.map((txn) => (
-                    <div key={txn._id} id={txn._id} className="transaction-row">
-                      <div className="transaction-left">
-                        <div className={`transaction-icon transaction-icon--${txn.type}`}>
-                          {txn.type === "income" ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+                    <div key={txn._id} id={txn._id} className="transaction-row flex items-center justify-between p-3 rounded-xl bg-[#111715]/70 border border-white/5 hover:border-emerald-500/30 transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2.5 rounded-xl flex items-center justify-center ${txn.type === "income" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-[#FF5C5C] border border-rose-500/20"}`}>
+                          {txn.type === "income" ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
                         </div>
                         <div>
-                          <div className="transaction-category">{txn.category}</div>
-                          <div className="transaction-date">{new Date(txn.date).toLocaleDateString()}</div>
+                          <div className="text-sm font-semibold text-white tracking-tight">{txn.category}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{new Date(txn.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</div>
                         </div>
                       </div>
-                      <div className="transaction-right">
-                        <div className={`transaction-amount transaction-amount--${txn.type}`}>
-                          {txn.type === "income" ? "+" : "-"} ₹{txn.amount}
+                      <div className="flex items-center gap-3">
+                        <div className={`font-mono text-sm font-bold ${txn.type === "income" ? "text-[#00E599]" : "text-[#FF5C5C]"}`}>
+                          {txn.type === "income" ? "+" : "-"}₹{txn.amount.toLocaleString("en-IN")}
                         </div>
                         <button className="delete-btn" onClick={async (e) => {
                           const button = e.currentTarget;
@@ -481,7 +565,7 @@ function Dashboard() {
                           setTimeout(() => ripple.remove(), 600);
                           const token = localStorage.getItem("token");
                           const row = document.getElementById(txn._id);
-                          row.classList.add("transaction-row--removing");
+                          if (row) row.classList.add("transaction-row--removing");
                           setTimeout(async () => {
                             await fetch(`${API_BASE}/transactions/${txn._id}`, {
                               method: "DELETE",
@@ -490,22 +574,22 @@ function Dashboard() {
                             setTransactions(prev => prev.filter(t => t._id !== txn._id));
                           }, 300);
                         }}>
-                          <X size={13} />
+                          <X size={14} />
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
           </div>
-        )}
+        </div>
 
-      </div>
+      {/* Floating AI Chatbot Assistant */}
       <AIChatbot />
-    </motion.div>
+    </div>
   );
 }
 
-export default Dashboard;
+export default Dashboard;

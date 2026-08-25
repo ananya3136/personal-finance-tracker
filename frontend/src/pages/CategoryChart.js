@@ -9,9 +9,9 @@ import {
 import "./CategoryChart.css";
 
 const COLORS = [
-  "#00e5a0", "#3b82f6", "#f59e0b", "#ef4444",
-  "#a78bfa", "#06b6d4", "#f97316", "#ec4899",
-  "#84cc16", "#14b8a6",
+  "#00E599", "#10B981", "#3B82F6", "#F59E0B",
+  "#EF4444", "#A78BFA", "#06B6D4", "#F97316",
+  "#EC4899", "#84CC16",
 ];
 
 const CustomTooltip = ({ active, payload, total }) => {
@@ -74,18 +74,21 @@ function CategoryChart({ categoryData = [] }) {
       {/* Chart + Legend */}
       <div className="category-chart__body">
 
-        {/* Pie */}
-        <div className="category-chart__pie">
+        {/* Donut Chart with Hollow Center */}
+        <div className="category-chart__pie" style={{ position: "relative" }}>
           <ResponsiveContainer width={220} height={220}>
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={3}
+                innerRadius={64}
+                outerRadius={96}
+                paddingAngle={4}
                 dataKey="value"
+                isAnimationActive={true}
+                animationDuration={1200}
+                animationEasing="ease-out"
                 onMouseEnter={(_, index) => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(null)}
                 strokeWidth={0}
@@ -95,9 +98,9 @@ function CategoryChart({ categoryData = [] }) {
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
                     opacity={
-                      activeIndex === null || activeIndex === index ? 1 : 0.4
+                      activeIndex === null || activeIndex === index ? 1 : 0.35
                     }
-                    style={{ cursor: "pointer", transition: "opacity 0.2s ease" }}
+                    style={{ cursor: "pointer", transition: "opacity 0.25s ease" }}
                   />
                 ))}
               </Pie>
@@ -107,6 +110,12 @@ function CategoryChart({ categoryData = [] }) {
               />
             </PieChart>
           </ResponsiveContainer>
+
+          {/* Hollow center total spent overlay */}
+          <div className="donut-center-overlay">
+            <span className="donut-center-label">Total Spent</span>
+            <span className="donut-center-value">₹{total.toLocaleString("en-IN")}</span>
+          </div>
         </div>
 
         {/* Legend */}

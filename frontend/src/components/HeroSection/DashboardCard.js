@@ -32,7 +32,7 @@ export default function DashboardCard() {
 
     return (
 
-        <div className="dashboard-card">
+        <div className="hero-dashboard-card">
 
             <div className="dashboard-top">
 
