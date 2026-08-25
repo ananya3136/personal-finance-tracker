@@ -30,7 +30,8 @@ function Login() {
 
       navigate("/dashboard");
     } catch (err) {
-      setError("Login failed. Please check your email and password.");
+      const msg = err.response?.data?.message || "Login failed. Please check your email and password.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
